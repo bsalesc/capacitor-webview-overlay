@@ -1,5 +1,5 @@
 {
-    "name": "@teamhive/capacitor-webview-overlay",
+    "name": "@loveholidays/capacitor-webview-overlay",
     "version": "2.0.2",
     "description": "Webview Overlay",
     "main": "dist/plugin.cjs.js",
@@ -17,10 +17,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/TeamHive/capacitor-webview-overlay.git"
-    },
-    "bugs": {
-        "url": "https://github.com/TeamHive/capacitor-webview-overlay/issues"
+        "url": "git+https://github.com/loveholidays/capacitor-webview-overlay.git"
     },
     "keywords": [
         "capacitor",

@@ -101,6 +101,10 @@ public class WebviewOverlayPlugin extends Plugin {
                 settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
                 settings.setDomStorageEnabled(true);
                 settings.setSupportMultipleWindows(true);
+                String userAgent = call.getString("userAgent", "");
+                if (!userAgent.isEmpty()) {
+                    settings.setUserAgentString(String.format("%s %s", settings.getUserAgentString(), userAgent));
+                }
 
                 // Temp fix until this setting is on by default
                 bridge.getWebView().getSettings().setJavaScriptCanOpenWindowsAutomatically(true);

@@ -1,5 +1,5 @@
 import { PluginListenerHandle, registerPlugin } from '@capacitor/core';
-import { IWebviewOverlayPlugin, ScriptInjectionTime } from './definitions';
+import { Cookie, IWebviewOverlayPlugin, ScriptInjectionTime } from './definitions';
 
 import ResizeObserver from 'resize-observer-polyfill';
 
@@ -26,6 +26,11 @@ export interface WebviewOverlayOpenOptions {
      * Allow use append the string to the end of the user agent.
      */
     userAgent?: string;
+
+    /**
+     * Allow inject cookies to the webview session.
+     */
+    cookies?: Cookie;
 }
 
 class WebviewOverlayClass {
@@ -70,6 +75,7 @@ class WebviewOverlayClass {
             url: options.url,
             javascript: options.script ? options.script.javascript : '',
             userAgent: options.userAgent ? options.userAgent : '',
+            cookies: options.cookies,
             injectionTime: options.script ? (options.script.injectionTime || ScriptInjectionTime.atDocumentStart) : ScriptInjectionTime.atDocumentStart,
             width: Math.round(boundingBox.width),
             height: Math.round(boundingBox.height),

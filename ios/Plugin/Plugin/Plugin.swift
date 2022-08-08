@@ -151,7 +151,7 @@ class WebviewOverlay: UIViewController, WKUIDelegate, WKNavigationDelegate {
         }
     }
 
-    public func loadUrl(_ url: URL) {
+    public func loadUrl(_ url: URL, with cookies: [HTTPCookie] = []) {
         if url.absoluteString.hasPrefix("file") {
             self.clearWebServer()
             self.webServer = GCDWebServer()
@@ -166,7 +166,23 @@ class WebviewOverlay: UIViewController, WKUIDelegate, WKNavigationDelegate {
             self.webview?.load(URLRequest(url: (self.webServer?.serverURL?.appendingPathComponent(url.lastPathComponent))!))
         }
         else {
-            self.webview?.load(URLRequest(url: url))
+            var request = URLRequest(url: url);
+            let headers = HTTPCookie.requestHeaderFields(with: cookies);
+            request.httpShouldHandleCookies = true
+            for (name, value) in headers {
+                request.addValue(value, forHTTPHeaderField: name)
+            }
+            
+            if (cookies.isEmpty){
+                self.webview?.load(request);
+            } else {
+                for cookie in cookies {
+                    self.webview?.configuration.websiteDataStore.httpCookieStore.setCookie(cookie, completionHandler: {
+                        self.webview?.load(request)
+                    });
+                    HTTPCookieStorage.shared.setCookie(cookie);
+                }
+            }
         }
     }
 
@@ -205,8 +221,19 @@ public class WebviewOverlayPlugin: CAPPlugin {
             webConfiguration.mediaTypesRequiringUserActionForPlayback = []
             webConfiguration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
             let userAgent = call.getString("userAgent");
-            if (userAgent) {
+            if (userAgent != nil) {
                 webConfiguration.applicationNameForUserAgent = "\(webConfiguration.applicationNameForUserAgent), \(userAgent)";
+            }
+            var cookies: [HTTPCookie] = [];
+            
+            for cookie in call.getArray("cookies", JSObject.self) ?? [] {
+                cookies.append(HTTPCookie(properties: [
+                    .domain: cookie["domain"],
+                    .originURL: cookie["domain"],
+                    .path: cookie["path"],
+                    .name: cookie["name"],
+                    .value: cookie["value"]
+                ])!)
             }
 
             // Content controller
@@ -252,7 +279,7 @@ public class WebviewOverlayPlugin: CAPPlugin {
             self.webviewOverlay.view.frame = CGRect(x: self.x, y: self.y, width: self.width, height: self.height)
             self.webviewOverlay.didMove(toParent: self.bridge?.viewController)
 
-            self.webviewOverlay.loadUrl(url!)
+            self.webviewOverlay.loadUrl(url!, with: cookies)
         }
     }
 

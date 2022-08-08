@@ -5,9 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Message;
+
+import com.getcapacitor.JSArray;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.MimeTypeMap;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -28,7 +31,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+
 import android.util.Base64;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -104,6 +112,39 @@ public class WebviewOverlayPlugin extends Plugin {
                 String userAgent = call.getString("userAgent", "");
                 if (!userAgent.isEmpty()) {
                     settings.setUserAgentString(String.format("%s %s", settings.getUserAgentString(), userAgent));
+                }
+
+                JSArray cookiesArray = call.getArray("cookies");
+                List<JSONObject> cookiesJson;
+                try {
+                    cookiesJson = cookiesArray.toList();
+                } catch (JSONException e) {
+                    call.reject("Provided notification format is invalid");
+                    return;
+                }
+
+                CookieManager cookieManager = CookieManager.getInstance();
+                cookieManager.setAcceptCookie(true);
+                cookieManager.acceptCookie();
+                cookieManager.setAcceptFileSchemeCookies(true);
+        
+                for (JSONObject jsonCookie : cookiesJson) {
+                    try {
+                        String cookieString = String.format(
+                                "%s=%s; path=$s",
+                                jsonCookie.getString("name"),
+                                jsonCookie.getString("value"),
+                                jsonCookie.getString("path")
+                        );
+
+                        cookieManager.setCookie(
+                                jsonCookie.getString("domain"),
+                                cookieString
+                        );
+                    } catch (JSONException e) {
+                        call.reject("Invalid JSON object sent to NotificationPlugin", e);
+                        return;
+                    }
                 }
 
                 // Temp fix until this setting is on by default

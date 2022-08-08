@@ -38,6 +38,14 @@ export interface IWebviewOverlayPlugin {
     addListener(eventName: 'pageLoaded' | 'updateSnapshot' | 'progress' | 'navigationHandler', listenerFunc: (...args: any[]) => void): PluginListenerHandle;
 }
 
+export interface Cookie {
+    domain: string;
+    path: string;
+    expires: string;
+    name: string;
+    value: string;
+}
+
 interface OpenOptions extends Dimensions {
     /**
      * The URL to open the webview to
@@ -47,6 +55,7 @@ interface OpenOptions extends Dimensions {
     javascript?: string;
     injectionTime?: ScriptInjectionTime;
     userAgent?: string;
+    cookies: Cookie[];
 }
 
 interface Dimensions {
